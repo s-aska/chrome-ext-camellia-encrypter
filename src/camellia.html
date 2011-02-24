@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>
+Camellia Encrypter - Javascript Encryption Gadget
+</title>
+<script type="text/javascript" src="lib/md5.js"></script>
+<script type="text/javascript" src="lib/CryptoCipherCamellia.js"></script>
+<script>
+function getIV() {
+  var len = 16;
+  var iv  = "";
+  while (len--) iv += String.fromCharCode( Math.floor(Math.random()* 0xff) );
+  return CybozuLabs.MD5.calc(iv).toUpperCase();
+}
+function do_encrypt() {
+  var password  = document.getElementById('password').value;
+  var plainText = document.getElementById('plain').value;
+  if (password.length == 0) {
+    alert('please input password.');
+    return;
+  }
+  if (plainText.length == 0) {
+    alert('please input plain text.');
+    return;
+  }
+  try {
+    var key          = CybozuLabs.MD5.calc(password).toUpperCase();
+    var iv           = getIV();
+    var cipher       = new CryptoCipherCamellia();
+    var cbc          = new CryptoModeCBC(cipher,
+                                CryptoUtil.arrayFromHex(key),
+                                CryptoUtil.arrayFromHex(iv));
+    var src          = CryptoUtil.arrayFromString(plainText);
+    var res          = cbc.encrypt(src);
+    var cipherText64 = CryptoUtil.base64FromArray(res);
+    
+    document.getElementById('crypt').value = iv + "\n" + cipherText64;
+  }
+  catch (e) {
+      alert(e);
+  }
+  return false;
+}
+function do_decrypt() {
+  var password   = document.getElementById('password').value;
+  var cipherText = document.getElementById('crypt').value;
+  if (password.length == 0) {
+    alert('please input password.');
+    return;
+  }
+  if (cipherText.length == 0) {
+    alert('please input crypt text.');
+    return;
+  }
+  var cipherText64 = document.getElementById('plain').value;
+  try {
+    var key          = CybozuLabs.MD5.calc(document.getElementById('password').value).toUpperCase();
+    var cipherText64 = cipherText.substr(32);
+    var iv           = cipherText.substr(0, 32)
+    var cipher       = new CryptoCipherCamellia();
+    var cbc          = new CryptoModeCBC(cipher,
+                                CryptoUtil.arrayFromHex(key),
+                                CryptoUtil.arrayFromHex(iv));
+    var res          = cbc.decrypt(CryptoUtil.arrayFromBase64(cipherText64));
+    var plainText    = CryptoUtil.stringFromArray(res);
+    
+    document.getElementById('plain').value = plainText;
+  }
+  catch (e) {
+      alert(e);
+  } 
+  return false;
+}
+function save_password() {
+  localStorage.setItem('org.7kai.chrome.camellia.password', document.getElementById('password').value);
+}
+function load_password() {
+  var password = localStorage.getItem('org.7kai.chrome.camellia.password');
+  if (password != null && password.length > 0) {
+    document.getElementById('password').value = password;
+  }
+}
+</script>
+<style>
+form input[type=text] {
+  width: 30em;
+}
+form textarea {
+  width: 30em;
+  height: 8em;
+}
+</style>
+</head>
+
+<body onload="load_password()">
+<form id="demo">
+Password:<br />
+<input type="password" id="password" value="" maxlength="64" /><input type="button" value="save" onclick="return save_password()" /><br />
+<br />
+Plain Text: <br />
+<textarea id="plain"></textarea><br />
+<input type="button" value="encrypt" onclick="return do_encrypt()" /> <br />
+<br />
+Crypt Text: <br />
+<textarea id="crypt"></textarea><br />
+<input type="button" value="decrypt" onclick="return do_decrypt()" /> <br />
+</form>
+</body>
+</html>

@@ -1,0 +1,14 @@
+{
+  "name": "Camellia Encrypter",
+  "version": "1.0",
+  "description": "Camellia Encrypter - Javascript Encryption Gadget",
+  "icons": { "48": "icon_48.png" },
+  "browser_action": {
+    "default_icon": "icon_32.png",
+    "default_title": "Camellia Encrypter - Javascript Encryption Gadget",
+    "popup": "camellia.html"
+  },
+  "permissions": [
+    "tabs"
+  ]
+}
